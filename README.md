@@ -8,7 +8,7 @@ Aplikace je vystavená pomocí Cloudflare Pages na https://vudce-maleho-plavidla
 - otázky v náhodném pořadí, odpovědi pokaždé zamíchané
 - okamžitá zpětná vazba po odpovědi
 - špatně zodpovězené otázky se vracejí častěji (Leitnerovy přihrádky), po 3 správných odpovědích v řadě je otázka zvládnutá
-- výběr zkoušek (M, C, S, libovolně kombinovatelné), okruhů a režimy „Nezvládnuté“ (neviděné a dosud nezvládnuté otázky) a „Jen chyby“
+- výběr zkoušek (M, S, C, libovolně kombinovatelné), okruhů a režimy „Nezvládnuté“ (neviděné a dosud nezvládnuté otázky) a „Jen chyby“
 
 ## Soubory
 
