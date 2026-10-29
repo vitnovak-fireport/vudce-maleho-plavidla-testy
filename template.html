@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Trenažér VMP</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -129,6 +130,7 @@ footer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify
       <span class="lbl">Režim</span>
       <div class="seg" id="mode">
         <button type="button" id="md-all" data-v="all" aria-pressed="true">Všechny otázky</button>
+        <button type="button" id="md-todo" data-v="todo" aria-pressed="false">Nezvládnuté</button>
         <button type="button" id="md-weak" data-v="weak" aria-pressed="false">Jen chyby</button>
       </div>
     </div>
@@ -186,10 +188,12 @@ function pool() {
   return exams.flatMap(k => DATA[k]).filter(q => !ui.off.includes(q.set));
 }
 function weakOf(list) { return list.filter(q => { const s = prog.q[q.id]; return s && s.w > 0 && s.b < MASTER_BOX; }); }
+function todoOf(list) { return list.filter(q => { const s = prog.q[q.id]; return !s || s.b < MASTER_BOX; }); }
 
 function pick() {
   let list = pool();
   if (ui.mode === "weak") list = weakOf(list);
+  else if (ui.mode === "todo") list = todoOf(list);
   if (!list.length) return null;
   const avoid = new Set(recent.slice(-Math.min(COOLDOWN, list.length - 1)));
   let total = 0;
@@ -216,8 +220,12 @@ function next() {
 }
 
 function renderEmpty() {
-  $("card").innerHTML = ui.mode === "weak"
-    ? `<div class="empty">V zvolených okruzích teď nemáte žádné chyby k opakování.<br><br><button type="button" class="btn" id="go-all">Procvičovat všechny otázky</button></div>`
+  const msg = !pool().length ? null
+    : ui.mode === "weak" ? "V zvolených okruzích teď nemáte žádné chyby k opakování."
+    : ui.mode === "todo" ? "Všechny otázky ve zvolených okruzích máte zvládnuté."
+    : null;
+  $("card").innerHTML = msg
+    ? `<div class="empty">${msg}<br><br><button type="button" class="btn" id="go-all">Procvičovat všechny otázky</button></div>`
     : `<div class="empty">Nemáte vybraný žádný okruh. Zapněte aspoň jeden výše.</div>`;
   const b = $("go-all"); if (b) b.onclick = () => setMode("all");
 }
