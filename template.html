@@ -56,6 +56,7 @@ h1 small { font-weight: 500; color: var(--muted); font-size: 1.05rem; margin-lef
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .lbl { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.lbl small { text-transform: none; letter-spacing: 0; font-weight: 400; }
 .ctl { display: flex; flex-direction: column; gap: 4px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { border: 1px solid transparent; background: var(--chip); color: var(--ink); border-radius: 999px; padding: 2px 10px; font: 500 .82rem var(--font-mono); cursor: pointer; }
@@ -119,11 +120,11 @@ footer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify
 
   <div class="controls">
     <div class="ctl">
-      <span class="lbl">Zkouška</span>
+      <span class="lbl">Zkouška <small>(lze kombinovat)</small></span>
       <div class="seg" id="exam">
         <button type="button" id="ex-M" data-v="M" aria-pressed="true">M</button>
         <button type="button" id="ex-C" data-v="C" aria-pressed="false">C</button>
-        <button type="button" id="ex-MC" data-v="MC" aria-pressed="false">M + C</button>
+        <button type="button" id="ex-S" data-v="S" aria-pressed="false">S</button>
       </div>
     </div>
     <div class="ctl">
@@ -164,7 +165,7 @@ footer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify
 
 <script>
 const DATA = __DATA__;
-const ALL = [...DATA.M, ...DATA.C];
+const ALL = [...DATA.M, ...DATA.C, ...DATA.S];
 const BYID = Object.fromEntries(ALL.map(q => [q.id, q]));
 const LS_KEY = "vmp-progress-v1", LS_UI = "vmp-ui-v1";
 // Leitner-style weights: box 0 = last answer wrong, each correct answer moves one box up.
@@ -172,7 +173,7 @@ const WEIGHT = [10, 5, 2.5, 1, 0.5, 0.3];
 const NEW_WEIGHT = 3, COOLDOWN = 6, MASTER_BOX = 3;
 
 let prog = { turn: 0, q: {} };
-let ui = { exam: "M", mode: "all", off: [] };
+let ui = { exams: ["M"], mode: "all", off: [] };
 let cur = null, answered = false, recent = [], sess = { ok: 0, n: 0 };
 let db = null, docRef = null, saveTimer = null, saving = Promise.resolve();
 
@@ -182,10 +183,13 @@ const imgs = list => list.map(f => `<img src="img/${encodeURIComponent(f)}" alt=
 
 try { const p = JSON.parse(localStorage.getItem(LS_KEY)); if (p && p.q) prog = p; } catch (e) {}
 try { const u = JSON.parse(localStorage.getItem(LS_UI)); if (u) ui = { ...ui, ...u }; } catch (e) {}
+// Older versions stored a single exam: "M", "C" or "MC".
+if (ui.exam) { ui.exams = ui.exam === "MC" ? ["M", "C"] : [ui.exam]; delete ui.exam; }
+ui.exams = (ui.exams || []).filter(k => DATA[k]);
+if (!ui.exams.length) ui.exams = ["M"];
 
 function pool() {
-  const exams = ui.exam === "MC" ? ["M", "C"] : [ui.exam];
-  return exams.flatMap(k => DATA[k]).filter(q => !ui.off.includes(q.set));
+  return ui.exams.flatMap(k => DATA[k]).filter(q => !ui.off.includes(q.set));
 }
 function weakOf(list) { return list.filter(q => { const s = prog.q[q.id]; return s && s.w > 0 && s.b < MASTER_BOX; }); }
 function todoOf(list) { return list.filter(q => { const s = prog.q[q.id]; return !s || s.b < MASTER_BOX; }); }
@@ -250,7 +254,7 @@ function render(choice) {
       <button type="button" class="btn" id="next">Další otázka →</button></div>`;
   }
   $("card").innerHTML = `
-    <div class="meta"><span>${q.id.startsWith("M") ? "Zkouška M" : "Zkouška C"} · č. ${q.n}</span><span class="tag">${esc(q.set)}</span>${tag}</div>
+    <div class="meta"><span>Zkouška ${q.id[0]} · č. ${q.n}</span><span class="tag">${esc(q.set)}</span>${tag}</div>
     <p class="q">${esc(q.q)}</p>
     ${q.img.length ? `<div class="qimg">${imgs(q.img)}</div>` : ""}
     <div class="answers">${answers}</div>${fb}`;
@@ -284,10 +288,9 @@ function renderStats() {
 }
 
 function renderControls() {
-  document.querySelectorAll("#exam button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === ui.exam));
+  document.querySelectorAll("#exam button").forEach(b => b.setAttribute("aria-pressed", ui.exams.includes(b.dataset.v)));
   document.querySelectorAll("#mode button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === ui.mode));
-  const exams = ui.exam === "MC" ? ["M", "C"] : [ui.exam];
-  const sets = [...new Set(exams.flatMap(k => DATA[k].map(q => q.set)))];
+  const sets = [...new Set(ui.exams.flatMap(k => DATA[k].map(q => q.set)))];
   $("sets").innerHTML = sets.map((s, i) => {
     const n = ALL.filter(q => q.set === s).length;
     return `<button type="button" class="chip" id="set-${i}" data-s="${esc(s)}" aria-pressed="${!ui.off.includes(s)}">${esc(s)} · ${n}</button>`;
@@ -300,7 +303,12 @@ function renderControls() {
 }
 function saveUi() { try { localStorage.setItem(LS_UI, JSON.stringify(ui)); } catch (e) {} }
 function setMode(v) { ui.mode = v; saveUi(); renderControls(); next(); }
-document.querySelectorAll("#exam button").forEach(b => b.onclick = () => { ui.exam = b.dataset.v; saveUi(); renderControls(); next(); });
+document.querySelectorAll("#exam button").forEach(b => b.onclick = () => {
+  const k = b.dataset.v;
+  if (ui.exams.includes(k)) { if (ui.exams.length === 1) return; ui.exams = ui.exams.filter(x => x !== k); }
+  else ui.exams = ["M", "C", "S"].filter(x => x === k || ui.exams.includes(x));
+  saveUi(); renderControls(); next();
+});
 document.querySelectorAll("#mode button").forEach(b => b.onclick = () => setMode(b.dataset.v));
 
 document.addEventListener("keydown", e => {

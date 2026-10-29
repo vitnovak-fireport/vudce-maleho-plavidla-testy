@@ -1,9 +1,10 @@
-"""Stáhne otázky M a C ze spspraha.cz do questions.json a obrázky do img/."""
+"""Stáhne otázky M, C a S ze spspraha.cz do questions.json a obrázky do img/."""
 import html, json, os, re, sys, urllib.request
 
 SOURCES = {
     "M": "https://www.spspraha.cz/zkousky/otazky.asp?zp=M%202015",
     "C": "https://www.spspraha.cz/zkousky/otazky.asp?zp=C",
+    "S": "https://www.spspraha.cz/zkousky/otazky.asp?zp=S%202015",
 }
 IMG_URL = "http://www.spspraha.cz/zkousky/images/"
 

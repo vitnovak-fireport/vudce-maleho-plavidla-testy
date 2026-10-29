@@ -1,6 +1,6 @@
 # Trenažér VMP
 
-Webová aplikace na procvičování testových otázek ke zkoušce vůdce malého plavidla (M a C).
+Webová aplikace na procvičování testových otázek ke zkoušce vůdce malého plavidla (M, C a S).
 Otázky pocházejí ze [spspraha.cz](https://www.spspraha.cz/zkousky/).
 
 Aplikace je vystavená pomocí Cloudflare Pages na https://vudce-maleho-plavidla-testy.drozdak.cz/.
@@ -8,7 +8,7 @@ Aplikace je vystavená pomocí Cloudflare Pages na https://vudce-maleho-plavidla
 - otázky v náhodném pořadí, odpovědi pokaždé zamíchané
 - okamžitá zpětná vazba po odpovědi
 - špatně zodpovězené otázky se vracejí častěji (Leitnerovy přihrádky), po 3 správných odpovědích v řadě je otázka zvládnutá
-- výběr zkoušky (M, C, M + C), okruhů a režimy „Nezvládnuté“ (neviděné a dosud nezvládnuté otázky) a „Jen chyby“
+- výběr zkoušek (M, C, S, libovolně kombinovatelné), okruhů a režimy „Nezvládnuté“ (neviděné a dosud nezvládnuté otázky) a „Jen chyby“
 
 ## Soubory
 
