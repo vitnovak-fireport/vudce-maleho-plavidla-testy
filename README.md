@@ -3,6 +3,8 @@
 Webová aplikace na procvičování testových otázek ke zkoušce vůdce malého plavidla (M a C).
 Otázky pocházejí ze [spspraha.cz](https://www.spspraha.cz/zkousky/).
 
+Aplikace je vystavená pomocí Cloudflare Pages na https://vudce-maleho-plavidla-testy.drozdak.cz/.
+
 - otázky v náhodném pořadí, odpovědi pokaždé zamíchané
 - okamžitá zpětná vazba po odpovědi
 - špatně zodpovězené otázky se vracejí častěji (Leitnerovy přihrádky), po 3 správných odpovědích v řadě je otázka zvládnutá
